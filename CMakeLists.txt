@@ -43,7 +43,13 @@ target_sources(llss
 target_compile_features(llss PRIVATE c_std_99)
 target_compile_features(llss PRIVATE cxx_std_17)
 
+# FLECS C needs standard-compliant preprocessor on MSVC
+target_compile_options(llss PRIVATE
+    $<$<C_COMPILER_ID:MSVC>:/Zc:preprocessor>
+)
+
 target_compile_definitions(llss PRIVATE app_FlecsStats)
+target_compile_definitions(llss PRIVATE app_EXPORTS)
 
 target_link_libraries(llss SDL3::SDL3)
 
@@ -57,3 +63,14 @@ elseif(WIN32)
 endif()
 
 install(TARGETS llss)
+
+# from https://cmake.org/cmake/help/latest/prop_dir/VS_STARTUP_PROJECT.html
+# from https://wiki.libsdl.org/SDL3/README-cmake#how-do-i-copy-a-sdl3-dynamic-library-to-another-location
+if(WIN32)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT llss)
+    add_custom_command(
+        TARGET llss POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3-shared> $<TARGET_FILE_DIR:llss>
+        VERBATIM
+    )
+endif()

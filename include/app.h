@@ -54,5 +54,6 @@
 #define app_error(...)    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__)
 #define app_critical(...) SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__)
 
+#include <inttypes.h> // PRIu64 and all
 #include <SDL3/SDL.h>
 #include "flecs.h"

@@ -9,10 +9,10 @@
   ],
   "configurePresets": [
     {
-      "name": "default",
-      "displayName": "Ninja Multi-Config",
-      "description": "Default build using Ninja Multi-Config generator",
-      "generator": "Ninja Multi-Config",
+      "name": "common",
+      "hidden": true,
+      "displayName": "Common definitions",
+      "description": "Common definitions for other presets",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
       },
@@ -22,66 +22,79 @@
       }
     },
     {
-      "name": "windows-only",
-      "inherits": "default",
-      "displayName": "Windows-only configuration",
-      "description": "This build is only available on Windows",
+      "name": "Darwin",
+      "inherits": "common",
+      "displayName": "MacOS (Darwin) XCode Multi-Config",
+      "description": "Default MacOS (Darwin) build using XCode generator",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "generator": "Xcode"
+    },
+    {
+      "name": "Linux",
+      "inherits": "common",
+      "displayName": "Linux Ninja Multi-Config",
+      "description": "Default linux build using Ninja Multi-Config generator",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "Windows",
+      "inherits": "common",
+      "displayName": "Windows Visual Studio 18 2026",
+      "description": "Default Windows build using Visual Studio 18 2026 generator",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
-      }
+      },
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/build"
     }
   ],
   "buildPresets": [
     {
-      "name": "default",
-      "configurePreset": "default"
+      "name": "Darwin",
+      "configurePreset": "Darwin"
+    },
+    {
+      "name": "Linux",
+      "configurePreset": "Linux"
+    },
+    {
+      "name": "Windows",
+      "configurePreset": "Windows"
     }
   ],
   "testPresets": [
     {
       "name": "default",
-      "configurePreset": "default",
-      "output": {"outputOnFailure": true},
-      "execution": {"noTestsAction": "error", "stopOnFailure": true}
+      "configurePreset": "common",
+      "output": { "outputOnFailure": true },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
     }
   ],
   "packagePresets": [
     {
       "name": "default",
-      "configurePreset": "default",
+      "configurePreset": "common",
       "generators": [
         "TGZ"
       ]
     }
-  ],
-  "workflowPresets": [
-    {
-      "name": "default",
-      "steps": [
-        {
-          "type": "configure",
-          "name": "default"
-        },
-        {
-          "type": "build",
-          "name": "default"
-        },
-        {
-          "type": "test",
-          "name": "default"
-        },
-        {
-          "type": "package",
-          "name": "default"
-        }
-      ]
-    }
-  ],
-  "vendor": {
-    "example.com/ExampleIDE/1.0": {
-      "autoFormat": false
-    }
-  }
+  ]
 }

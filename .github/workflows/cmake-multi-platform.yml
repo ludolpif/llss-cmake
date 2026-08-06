@@ -25,12 +25,15 @@ jobs:
         cfg: [RelWithDebInfo]
         include:
           - os: windows-latest
+            ospretty: Windows
             cmake_generator: Visual Studio 18 2026
             c_compiler: cl
             cxx_compiler: cl
             c_flags: /arch:AVX2
             cxx_flags: /arch:AVX2
-          - os: ubuntu-latest
+
+          - os: ubuntu-noble
+            ospretty: ubuntu-noble
             cmake_generator: Ninja Multi-Config
             c_compiler: gcc
             cxx_compiler: g++
@@ -41,7 +44,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Configure CMake
-      working-directory: ${{ github.workspace }}
+      #working-directory: ${{ github.workspace }}
       run: >
         cmake -B ./build
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
@@ -51,6 +54,7 @@ jobs:
         -S .
 
     - name: Build
+      #working-directory: ${{ github.workspace }}
       run: cmake --build ./build --config ${{ matrix.cfg }}
 
     - name: Test
@@ -58,4 +62,13 @@ jobs:
       run: ctest --build-config ${{ matrix.cfg }}
 
     - name: Install
+      #working-directory: ${{ github.workspace }}
       run: cmake --install ./build --config ${{ matrix.cfg }} --prefix ${{ github.workspace }}/install/${{ matrix.cfg }}
+
+    - name: Upload artifact
+      #working-directory: ${{ github.workspace }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: llss-0.X.Y.Z-${{ matrix.ospretty }}-${{ matrix.cfg }}
+        path: ./install/${{ matrix.cfg }}
+        retention-days: 5

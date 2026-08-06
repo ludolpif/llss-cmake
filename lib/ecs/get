@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# This file is part of LLSS.
+#
+# LLSS is free software: you can redistribute it and/or modify it under the terms of the
+# Affero GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+#
+# LLSS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with LLSS.
+# If not, see <https://www.gnu.org/licenses/>. See LICENSE file at root of this git repo.
+#
+# Copyright 2025-2026 ludolpif <ludolpif@gmail.com>
+#
+FLECS_TAG="v4.1.6"
+
+sources() {
+	set -xe
+	rm -rf flecs
+	mkdir flecs
+	rawbase=https://github.com/SanderMertens/flecs/raw/refs/tags/$FLECS_TAG
+	curl -Lfo flecs/LICENSE $rawbase/LICENSE
+	curl -Lfo flecs/flecs.h $rawbase/distr/flecs.h
+	curl -Lfo flecs/flecs.c $rawbase/distr/flecs.c
+	ls -l flecs
+}
+_usage() {
+	echo "Usage $0 --sources" >&2
+	exit 1
+}
+case "$1" in
+	--sources) sources ;;
+	*) _usage ;;
+esac
+

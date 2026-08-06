@@ -71,6 +71,12 @@ jobs:
     - name: Setup SDL
       id: sdl
       uses: libsdl-org/setup-sdl@main
+      env:
+        CMAKE_BUILD_TYPE: ${{ matrix.cfg }}
+        CMAKE_C_COMPILER: ${{ matrix.c_compiler }}
+        CMAKE_C_FLAGS: ${{ matrix.c_flags }}
+        SDL_SHARED: ON
+        SDL_STATIC: OFF
       with:
         install-linux-dependencies: true
         version: ${{ matrix.sdl }}

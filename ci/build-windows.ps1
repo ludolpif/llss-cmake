@@ -12,6 +12,11 @@ if ($cfg -ne "Debug" -and $cfg -ne "RelWithDebInfo" -and $cfg -ne "Release") {
 	exit 1
 }
 
+if(!$env.ContainsKey('SDL3_DIR') {
+	[Console]::Error.WriteLine("This script needs SDL3_DIR envrionment variable to be set to the unziped folder of SDL3-devel-*-VC.zip")
+	exit 1
+}
+
 # Stop the script when a native command or a cmdlet fails
 $PSNativeCommandUseErrorActionPreference = $true
 $ErrorActionPreference = 'Stop'

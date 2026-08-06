@@ -80,9 +80,9 @@ jobs:
         cmake-arguments: >-
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_C_FLAGS=${{ matrix.c_flags }}
-          -DCMAKE_BUILD_TYPE: ${{ matrix.cfg }}
-          -DSDL_SHARED: ON
-          -DSDL_STATIC: OFF
+          -DCMAKE_BUILD_TYPE=${{ matrix.cfg }}
+          -DSDL_SHARED=ON
+          -DSDL_STATIC=OFF
 
     - name: Configure CMake
       #working-directory: ${{ github.workspace }}

@@ -21,40 +21,59 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the cfg list.
       matrix:
-        os: [ubuntu-26.04, windows-2025-vs2026]
+        os: [ubuntu-26.04, windows-2025-vs2026, macos-15-intel, macos-26]
         cfg: [RelWithDebInfo]
-        sdl: [3.2.10]
         include:
           - os: windows-2025-vs2026
-            ospretty: Windows
+            platform: windows
             cmake_generator: Visual Studio 18 2026
             c_compiler: cl
             cxx_compiler: cl
             c_flags: /arch:AVX2
             cxx_flags: /arch:AVX2
-
+            sdl: 3.4.14
           - os: ubuntu-26.04
-            ospretty: linux-libc243-libstdcxx-16
+            platform: linux-x86-64-v3-glibc6-2-43-libstdcxx-16
             cmake_generator: Ninja Multi-Config
             c_compiler: gcc
             cxx_compiler: g++
             c_flags: -march=x86-64-v3
             cxx_flags: -march=x86-64-v3
+            sdl: 3.2.10
+          - os: macos-15-intel
+            platform: macos-15-intel
+            cmake_generator: Xcode
+            c_compiler: clang
+            cxx_compiler: clang++
+            c_flags:
+            cxx_flags:
+            sdl: 3.2.10
+          - os: macos-26
+            platform: macos-26-arm64
+            cmake_generator: Xcode
+            c_compiler: clang
+            cxx_compiler: clang++
+            c_flags:
+            cxx_flags:
+            sdl: 3.4.14
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
-    - name: Install Linux Deps
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libasound2-dev libpulse-dev libaudio-dev libjack-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libudev-dev libwayland-dev libdecor-0-dev
+#    - name: Install Linux Deps
+#      if: runner.os == 'Linux'
+#      run: |
+#        sudo apt-get update
+#        sudo apt-get install -y libasound2-dev libpulse-dev libaudio-dev libjack-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libudev-dev libwayland-dev libdecor-0-dev
 
     - name: Setup SDL
       id: sdl
       uses: libsdl-org/setup-sdl@main
       with:
+        install-linux-dependencies: true
         version: ${{ matrix.sdl }}
+        version-sdl-image: ${{ matrix.sdl }}
+        version-sdl-ttf: ${{ matrix.sdl }}
 
     - name: Configure CMake
       #working-directory: ${{ github.workspace }}
@@ -84,6 +103,6 @@ jobs:
       #working-directory: ${{ github.workspace }}
       uses: actions/upload-artifact@v7
       with:
-        name: llss-0.X.Y.Z-${{ matrix.ospretty }}-sdl-${{ matrix.sdl }}-${{ matrix.cfg }}
+        name: llss-0.X.Y.Z-${{ matrix.platform }}-sdl${{ matrix.sdl }}-${{ matrix.cfg }}
         path: ./install/${{ matrix.cfg }}
         retention-days: 5

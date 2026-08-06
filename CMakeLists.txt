@@ -62,7 +62,10 @@ elseif(WIN32)
     target_link_libraries(llss wsock32 ws2_32 dbghelp)
 endif()
 
-install(TARGETS llss)
+install(TARGETS llss
+    BUNDLE DESTINATION .
+    RUNTIME DESTINATION bin
+)
 
 # from https://cmake.org/cmake/help/latest/prop_dir/VS_STARTUP_PROJECT.html
 # from https://wiki.libsdl.org/SDL3/README-cmake#how-do-i-copy-a-sdl3-dynamic-library-to-another-location

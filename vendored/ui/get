@@ -1,0 +1,56 @@
+#!/bin/sh
+#
+# This file is part of LLSS.
+#
+# LLSS is free software: you can redistribute it and/or modify it under the terms of the
+# Affero GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+#
+# LLSS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with LLSS.
+# If not, see <https://www.gnu.org/licenses/>. See LICENSE file at root of this git repo.
+#
+# Copyright 2025-2026 ludolpif <ludolpif@gmail.com>
+#
+IMGUI_BRANCH="v1.92.9b-docking"
+DEAR_BINDINGS_BRANCH="DearBindings_v0.21_ImGui_v1.92.9b-docking"
+
+sources() {
+	set -xe
+	rm -rf imgui
+	git clone -q -c advice.detachedHead=false --depth 1 --branch $IMGUI_BRANCH --single-branch https://github.com/ocornut/imgui.git
+	( cd imgui && rm -rf .[a-z]* docs examples misc )
+	find imgui/backends/ -type f \! -regex '.*sdl\(gpu\)?3.*' -print0 | xargs -r0 rm
+
+	rm -rf dear_bindings
+	git clone -q -c advice.detachedHead=false --depth 1 --branch $DEAR_BINDINGS_BRANCH --single-branch https://github.com/dearimgui/dear_bindings.git
+	( cd dear_bindings && rm -rf .[a-z]* docs examples )
+	
+	rm -rf dear_bindings_generated
+	mkdir -p dear_bindings_generated/backends
+	if [ ! -d dear_venv ]; then
+		python3 -m venv dear_venv
+		dear_venv/bin/pip install -r dear_bindings/requirements.txt
+	fi
+	(
+		cd dear_bindings
+		../dear_venv/bin/python dear_bindings.py -o ../dear_bindings_generated/dcimgui ../imgui/imgui.h
+		../dear_venv/bin/python dear_bindings.py -o ../dear_bindings_generated/dcimgui_internal --include ../imgui/imgui.h ../imgui/imgui_internal.h
+		../dear_venv/bin/python dear_bindings.py --backend --include ../imgui/imgui.h --imconfig-path ../imgui/imconfig.h -o ../dear_bindings_generated/backends/dcimgui_impl_sdl3 ../imgui/backends/imgui_impl_sdl3.h
+		../dear_venv/bin/python dear_bindings.py --backend --include ../imgui/imgui.h --imconfig-path ../imgui/imconfig.h -o ../dear_bindings_generated/backends/dcimgui_impl_sdlgpu3 ../imgui/backends/imgui_impl_sdlgpu3.h
+	)
+	rm -rf dear_bindings dear_venv dear_bindings_generated/*.json dear_bindings_generated/backends/*.json
+
+}
+_usage() {
+	echo "Usage $0 --sources" >&2
+	exit 1
+}
+case $1 in
+	--sources) sources ;;
+	*) _usage ;;
+esac
+

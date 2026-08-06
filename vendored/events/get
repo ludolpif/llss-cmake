@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# This file is part of LLSS.
+#
+# LLSS is free software: you can redistribute it and/or modify it under the terms of the
+# Affero GNU General Public License as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
+#
+# LLSS is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with LLSS.
+# If not, see <https://www.gnu.org/licenses/>. See LICENSE file at root of this git repo.
+#
+# Copyright 2025-2026 ludolpif <ludolpif@gmail.com>
+#
+DMON_COMMIT="89d46c52c4a692ae5147ca4db1f1b69cfb8453e3"
+
+sources() {
+	set -xe
+	rm -rf dmon
+	mkdir dmon
+	rawbase=https://raw.githubusercontent.com/septag/dmon/$DMON_COMMIT
+	curl -Lfo dmon/LICENSE $rawbase/LICENSE
+	curl -Lfo dmon/dmon.h $rawbase/dmon.h
+	curl -Lfo dmon/dmon_extra.h $rawbase/dmon_extra.h
+	ls -l dmon
+}
+_usage() {
+	echo "Usage $0 --sources" >&2
+	exit 1
+}
+case "$1" in
+	--sources) sources ;;
+	*) _usage ;;
+esac
+

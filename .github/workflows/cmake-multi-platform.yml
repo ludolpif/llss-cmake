@@ -72,16 +72,17 @@ jobs:
       id: sdl
       uses: libsdl-org/setup-sdl@main
       env:
-        CMAKE_BUILD_TYPE: ${{ matrix.cfg }}
-        CMAKE_C_COMPILER: ${{ matrix.c_compiler }}
-        CMAKE_C_FLAGS: ${{ matrix.c_flags }}
-        SDL_SHARED: ON
-        SDL_STATIC: OFF
       with:
         install-linux-dependencies: true
         version: ${{ matrix.sdl }}
         version-sdl-image: ${{ matrix.sdl-image }}
         version-sdl-ttf: ${{ matrix.sdl-ttf }}
+        cmake-arguments: >-
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_C_FLAGS=${{ matrix.c_flags }}
+          -DCMAKE_BUILD_TYPE: ${{ matrix.cfg }}
+          -DSDL_SHARED: ON
+          -DSDL_STATIC: OFF
 
     - name: Configure CMake
       #working-directory: ${{ github.workspace }}

@@ -21,10 +21,10 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the cfg list.
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-noble, windows-2025-vs2026]
         cfg: [RelWithDebInfo]
         include:
-          - os: windows-latest
+          - os: windows-2025-vs2026
             ospretty: Windows
             cmake_generator: Visual Studio 18 2026
             c_compiler: cl
@@ -43,8 +43,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Install Linux Deps
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libasound2-dev libpulse-dev libaudio-dev libjack-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libudev-dev libwayland-dev libdecor-0-dev
+
+    - name: Setup SDL3
+      id: sdl
+      uses: libsdl-org/setup-sdl@main
+      with:
+        version: 3.2.10
+
     - name: Configure CMake
       #working-directory: ${{ github.workspace }}
+      env:
+        SDL3_DIR: ${{ steps.sdl.outputs.prefix }}
       run: >
         cmake -B ./build
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}

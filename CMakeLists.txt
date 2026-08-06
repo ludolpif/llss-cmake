@@ -78,15 +78,11 @@ if(WIN32)
     add_custom_command(
         TARGET llss POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3-shared> $<TARGET_FILE_DIR:llss>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3_image-shared> $<TARGET_FILE_DIR:llss>
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3_ttf-shared> $<TARGET_FILE_DIR:llss>
         COMMENT "Copy SDL3*.dll next to the app in the build directory"
         VERBATIM
     )
     # Include SDL3*.dll next to the app when RUNNING THE INSTALLER
     install(FILES
         $<TARGET_FILE:SDL3::SDL3-shared>
-        $<TARGET_FILE:SDL3::SDL3_image-shared>
-        $<TARGET_FILE:SDL3::SDL3_ttf-shared>
         DESTINATION bin)
 endif()

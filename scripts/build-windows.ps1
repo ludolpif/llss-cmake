@@ -13,7 +13,7 @@ if ($cfg -ne "Debug" -and $cfg -ne "RelWithDebInfo" -and $cfg -ne "Release") {
 }
 
 if(!$env.ContainsKey('SDL3_DIR') {
-	[Console]::Error.WriteLine("This script needs SDL3_DIR envrionment variable to be set to the unziped folder of SDL3-devel-*-VC.zip")
+	[Console]::Error.WriteLine("Warning: cmake needs SDL3_DIR envrionment variable to be set to the unziped folder of SDL3-devel-*-VC.zip")
 	exit 1
 }
 

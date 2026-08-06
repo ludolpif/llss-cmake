@@ -21,11 +21,11 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the cfg list.
       matrix:
-        os: [ubuntu-26.04, windows-2025-vs2026, macos-15-intel, macos-26]
+        os: [ubuntu-24.04, windows-2025-vs2026, macos-15-intel, macos-26]
         cfg: [RelWithDebInfo]
         include:
           - os: windows-2025-vs2026
-            platform: windows
+            platform: windows-10-or-11
             cmake_generator: Visual Studio 18 2026
             c_compiler: cl
             cxx_compiler: cl
@@ -34,8 +34,8 @@ jobs:
             sdl: 3.4.14
             sdl-image: 3.4.4
             sdl-ttf: 3.2.2
-          - os: ubuntu-26.04
-            platform: linux-x86-64-v3-glibc6-2-43-libstdcxx-16
+          - os: ubuntu-24.04
+            platform: linux-x86-64-v3-glibc6-2-39-libstdcxx-13-2
             cmake_generator: Ninja Multi-Config
             c_compiler: gcc
             cxx_compiler: g++
@@ -67,12 +67,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v7
-
-#    - name: Install Linux Deps
-#      if: runner.os == 'Linux'
-#      run: |
-#        sudo apt-get update
-#        sudo apt-get install -y libasound2-dev libpulse-dev libaudio-dev libjack-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libudev-dev libwayland-dev libdecor-0-dev
 
     - name: Setup SDL
       id: sdl

@@ -86,7 +86,7 @@ jobs:
 
     - name: Configure CMake
       #working-directory: ${{ github.workspace }}
-      run: >-
+      run: >
         cmake -B ./build
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }}

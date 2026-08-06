@@ -3,6 +3,8 @@ project(llss VERSION 0.1.0 LANGUAGES C CXX)
 include(GNUInstallDirs)
 
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
+find_package(SDL3_image REQUIRED CONFIG REQUIRED COMPONENTS SDL3_image-shared)
+find_package(SDL3_ttf REQUIRED CONFIG REQUIRED COMPONENTS SDL3_ttf-shared)
 if(LINUX)
     find_package(Threads REQUIRED)
 endif()

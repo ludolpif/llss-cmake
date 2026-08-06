@@ -1,6 +1,7 @@
 param (
 	[Parameter(Mandatory = $false)]
 	[string]$cfg
+	[string]$SDL3_DIR
 )
 
 $GITROOT = "$PSScriptRoot/.."
@@ -11,10 +12,8 @@ if ($cfg -ne "Debug" -and $cfg -ne "RelWithDebInfo" -and $cfg -ne "Release") {
 	[Console]::Error.WriteLine("Usage: $PSCommandPath (Debug|RelWithDebInfo|Release)")
 	exit 1
 }
-
-if(!$env.ContainsKey('SDL3_DIR') {
-	[Console]::Error.WriteLine("Warning: cmake needs SDL3_DIR envrionment variable to be set to the unziped folder of SDL3-devel-*-VC.zip")
-	exit 1
+if (!$PSBoundParameters.ContainsKey('SDL3_DIR')) {
+	[Console]::Warning.WriteLine("cmake needs SDL3_DIR or CMAKE_PREFIX_PATH to be set to the unziped folder of SDL3-devel-*-VC.zip")
 }
 
 # Stop the script when a native command or a cmdlet fails
@@ -37,6 +36,7 @@ cd $GITROOT
 	-DCMAKE_CXX_COMPILER="cl" `
 	-DCMAKE_C_FLAGS="/arch:AVX2" `
 	-DCMAKE_CXX_FLAGS="/arch:AVX2" `
+	-DCMAKE_PREFIX_PATH="$SDL3_DIR" `
 	-S .
 
 "::notice cmake --build ./build --config $cfg"

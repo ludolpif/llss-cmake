@@ -79,14 +79,13 @@ jobs:
 
     - name: Configure CMake
       #working-directory: ${{ github.workspace }}
-      env:
-        SDL3_DIR: ${{ steps.sdl.outputs.prefix }}
       run: >
         cmake -B ./build
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }}
         -DCMAKE_C_FLAGS=${{ matrix.c_flags }}
         -DCMAKE_CXX_FLAGS=${{ matrix.cxx_flags }}
+        -DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}
         -S .
 
     - name: Build

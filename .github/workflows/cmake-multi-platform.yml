@@ -32,6 +32,8 @@ jobs:
             c_flags: /arch:AVX2
             cxx_flags: /arch:AVX2
             sdl: 3.4.14
+            sdl-image: 3.4.4
+            sdl-ttf: 3.2.2
           - os: ubuntu-26.04
             platform: linux-x86-64-v3-glibc6-2-43-libstdcxx-16
             cmake_generator: Ninja Multi-Config
@@ -40,6 +42,8 @@ jobs:
             c_flags: -march=x86-64-v3
             cxx_flags: -march=x86-64-v3
             sdl: 3.2.10
+            sdl-image: 3.2.4
+            sdl-ttf: 3.2.2
           - os: macos-15-intel
             platform: macos-15-intel
             cmake_generator: Xcode
@@ -48,6 +52,8 @@ jobs:
             c_flags:
             cxx_flags:
             sdl: 3.2.10
+            sdl-image: 3.2.4
+            sdl-ttf: 3.2.2
           - os: macos-26
             platform: macos-26-arm64
             cmake_generator: Xcode
@@ -56,6 +62,8 @@ jobs:
             c_flags:
             cxx_flags:
             sdl: 3.4.14
+            sdl-image: 3.4.4
+            sdl-ttf: 3.2.2
 
     steps:
     - uses: actions/checkout@v7
@@ -72,8 +80,8 @@ jobs:
       with:
         install-linux-dependencies: true
         version: ${{ matrix.sdl }}
-        version-sdl-image: ${{ matrix.sdl }}
-        version-sdl-ttf: ${{ matrix.sdl }}
+        version-sdl-image: ${{ matrix.sdl-image }}
+        version-sdl-ttf: ${{ matrix.sdl-ttf }}
 
     - name: Configure CMake
       #working-directory: ${{ github.workspace }}

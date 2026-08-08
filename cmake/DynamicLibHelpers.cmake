@@ -9,7 +9,7 @@ function(sdl3_copy_dynamic_lib target_name)
             VERBATIM
         )
     else()
-        message(STATUS "SDL3 is statically linked to ${target_name}")
+        message(STATUS "sdl3_copy_dynamic_lib: no-op: SDL3 is statically linked to ${target_name}")
     endif()
 endfunction()
 
@@ -21,6 +21,22 @@ function(sdl3_install_dynamic_lib target_name)
             $<TARGET_FILE:SDL3::SDL3-shared>
             DESTINATION bin)
     else()
-        message(STATUS "SDL3 is statically linked to ${target_name}")
+        message(STATUS "sdl3_install_dynamic_lib: no-op: SDL3 is statically linked to ${target_name}")
+    endif()
+endfunction()
+
+
+function(rpath_for_vendored_dynamic_libs target_name)
+    if(APPLE)
+        set_target_properties(${target_name} PROPERTIES
+            INSTALL_RPATH "@executable_path;@loader_path"
+            BUILD_WITH_INSTALL_RPATH TRUE
+            MACOSX_RPATH TRUE
+        )
+    elseif(LINUX)
+        set_target_properties(${target_name} PROPERTIES
+            INSTALL_RPATH "$ORIGIN"
+            BUILD_WITH_INSTALL_RPATH TRUE
+        )
     endif()
 endfunction()

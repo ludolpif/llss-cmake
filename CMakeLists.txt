@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.31)
 project(llss VERSION 0.1.0 LANGUAGES C CXX)
 include(GNUInstallDirs)
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/SDL3DynamicLibHelpers.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/DynamicLibHelpers.cmake")
 
-option(SDL3_SKIP_COPY_DYNAMIC_LIB "Skip copying the SDL3 dynamic library to the build binary directory" OFF)
-option(SDL3_SKIP_INSTALL_DYNAMIC_LIB "Skip install the SDL3 dynamic library" OFF)
+option(SKIP_SDL3_COPY_DYNAMIC_LIB "Skip copying the SDL3 dynamic library to the build binary directory" OFF)
+option(SKIP_SDL3_INSTALL_DYNAMIC_LIB "Skip install the SDL3 dynamic library" OFF)
+option(SKIP_RPATH_FOR_VENDORED_DYNAMIC_LIBS "Skip RPATH tweaking for vendored dynamic library" OFF)
 
 find_package(SDL3 REQUIRED)
 find_package(SDL3_image REQUIRED)
@@ -71,12 +72,14 @@ install(TARGETS llss
     RUNTIME DESTINATION bin
 )
 
-if(NOT SDL3_SKIP_COPY_DYNAMIC_LIB)
+if(NOT SKIP_SDL3_COPY_DYNAMIC_LIB)
 	sdl3_copy_dynamic_lib(llss)
 endif()
-
-if(NOT SDL3_SKIP_INSTALL_DYNAMIC_LIB)
+if(NOT SKIP_SDL3_INSTALL_DYNAMIC_LIB)
 	sdl3_install_dynamic_lib(llss)
+endif()
+if(NOT SKIP_RPATH_FOR_VENDORED_DYNAMIC_LIBS)
+	rpath_for_vendored_dynamic_libs(llss)
 endif()
 
 # from https://cmake.org/cmake/help/latest/prop_dir/VS_STARTUP_PROJECT.html

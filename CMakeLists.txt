@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.31)
 project(llss VERSION 0.1.0 LANGUAGES C CXX)
 include(GNUInstallDirs)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/SDL3DynamicLibHelpers.cmake")
 
-find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
-find_package(SDL3_image REQUIRED CONFIG REQUIRED COMPONENTS SDL3_image-shared)
-find_package(SDL3_ttf REQUIRED CONFIG REQUIRED COMPONENTS SDL3_ttf-shared)
+option(SDL3_SKIP_COPY_DYNAMIC_LIB "Skip copying the SDL3 dynamic library to the build binary directory" OFF)
+option(SDL3_SKIP_INSTALL_DYNAMIC_LIB "Skip install the SDL3 dynamic library" OFF)
+
+find_package(SDL3 REQUIRED)
+find_package(SDL3_image REQUIRED)
+find_package(SDL3_ttf REQUIRED)
+
 if(LINUX)
     find_package(Threads REQUIRED)
 endif()
-
-# Must set before add_library()/add_executable()
-set(CMAKE_C_VISIBILITY_PRESET hidden)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 add_subdirectory(vendored/ui)
 
@@ -71,18 +71,15 @@ install(TARGETS llss
     RUNTIME DESTINATION bin
 )
 
+if(NOT SDL3_SKIP_COPY_DYNAMIC_LIB)
+	sdl3_copy_dynamic_lib(llss)
+endif()
+
+if(NOT SDL3_SKIP_INSTALL_DYNAMIC_LIB)
+	sdl3_install_dynamic_lib(llss)
+endif()
+
 # from https://cmake.org/cmake/help/latest/prop_dir/VS_STARTUP_PROJECT.html
-# from https://wiki.libsdl.org/SDL3/README-cmake#how-do-i-copy-a-sdl3-dynamic-library-to-another-location
 if(WIN32)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT llss)
-    add_custom_command(
-        TARGET llss POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy $<TARGET_FILE:SDL3::SDL3-shared> $<TARGET_FILE_DIR:llss>
-        COMMENT "Copy SDL3*.dll next to the app in the build directory"
-        VERBATIM
-    )
-    # Include SDL3*.dll next to the app when RUNNING THE INSTALLER
-    install(FILES
-        $<TARGET_FILE:SDL3::SDL3-shared>
-        DESTINATION bin)
 endif()

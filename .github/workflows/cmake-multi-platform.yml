@@ -28,70 +28,61 @@ jobs:
           - os: windows-2025-vs2026
             platform: windows-10-or-11
             cmake_generator: Visual Studio 18 2026
-            c_compiler: cl
-            cxx_compiler: cl
-            c_flags: /arch:AVX2
-            cxx_flags: /arch:AVX2
+            arch_flags: /arch:AVX2
             sdl: 3.4.14
-            sdl-image: 3.4.4
-            sdl-ttf: 3.2.2
           - os: ubuntu-24.04
             platform: linux-x86-64-v3-glibc6-2-39-libstdcxx-13-2
             cmake_generator: Ninja Multi-Config
-            c_compiler: gcc
-            cxx_compiler: g++
-            c_flags: -march=x86-64-v3
-            cxx_flags: -march=x86-64-v3
+            arch_flags: -march=x86-64-v3
             sdl: 3.2.10
-            sdl-image: 3.2.4
-            sdl-ttf: 3.2.2
           - os: macos-15-intel
             platform: macos-15-intel
             cmake_generator: Xcode
-            c_compiler: clang
-            cxx_compiler: clang++
-            c_flags:
-            cxx_flags:
+            arch_flags:
             sdl: 3.2.10
-            sdl-image: 3.2.4
-            sdl-ttf: 3.2.2
           - os: macos-26
             platform: macos-26-arm64
             cmake_generator: Xcode
-            c_compiler: clang
-            cxx_compiler: clang++
-            c_flags:
-            cxx_flags:
+            arch_flags:
             sdl: 3.4.14
-            sdl-image: 3.4.4
-            sdl-ttf: 3.2.2
 
     steps:
     - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
 
-    - name: Setup SDL
+    - name: Setup SDL (${{ env.ImageOS }}-${{ env.ImageVersion }}-${{ matrix.cfg }})
       id: sdl
       uses: libsdl-org/setup-sdl@main
       with:
-        install-linux-dependencies: true
-        version: ${{ matrix.sdl }}
-        version-sdl-image: ${{ matrix.sdl-image }}
-        version-sdl-ttf: ${{ matrix.sdl-ttf }}
+        build-type: ${{ matrix.cfg }}
         cmake-arguments: >-
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_C_FLAGS=${{ matrix.c_flags }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.cfg }}
+          -DCMAKE_C_FLAGS=${{ matrix.arch_flags }}
           -DSDL_SHARED=ON
           -DSDL_STATIC=OFF
+        cmake-generator: ${{ matrix.cmake_generator }}
+        discriminator: ${{ env.ImageOS }}-${{ env.ImageVersion }}-${{ matrix.cfg }}
+        #cmake-toolchain-file:
+        install-linux-dependencies: true
+        version: ${{ matrix.sdl }}
+        #version-sdl-image: 3-latest
+        #version-sdl-mixer: 3-latest
+        #version-sdl-net: 3-latest
+        #version-sdl-ttf: 3-latest
+
+    - name: Dump context informations
+      run: |
+        echo GITHUB_OUTPUT
+        cat "$GITHUB_OUTPUT"
+        echo env
+        env
 
     - name: Configure CMake
       #working-directory: ${{ github.workspace }}
       run: >-
         cmake -B ./build
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }}
-        -DCMAKE_C_FLAGS=${{ matrix.c_flags }}
-        -DCMAKE_CXX_FLAGS=${{ matrix.cxx_flags }}
+        -DCMAKE_C_FLAGS=${{ matrix.arch_flags }}
+        -DCMAKE_CXX_FLAGS=${{ matrix.arch_flags }}
         -DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}
         -S .
 

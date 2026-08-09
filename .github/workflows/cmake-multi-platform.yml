@@ -71,7 +71,7 @@ jobs:
 
     - name: Setup SDL
       id: sdl
-      uses: ludolpif/setup-sdl@fix-install-deps-false-warn-on-windows
+      uses: libsdl-org/setup-sdl@main
       with:
         install-linux-dependencies: true
         version: ${{ matrix.sdl }}

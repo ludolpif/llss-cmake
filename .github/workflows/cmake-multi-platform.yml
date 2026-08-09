@@ -25,7 +25,6 @@ jobs:
           - os: ubuntu-24.04
             platform: linux-x86-64-v3-glibc6-2-39-libstdcxx-13-2
             cmake_generator: Ninja Multi-Config
-            arch_flags: -march=x86-64-v3
             sdl: 3.2.10
             sdl-image: 3.2.4
           - os: macos-26
@@ -46,11 +45,43 @@ jobs:
         echo "ImageVersion=$ImageVersion" >> $GITHUB_ENV
         echo "CACHE_DISCRIMINATOR=$ImageOS-$ImageVersion-${{ matrix.cfg }}" >> $GITHUB_ENV
 
+    - name: Export CMAKE_* vars to ENV configure both SDL and LLSS builds
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        cat >> $GITHUB_ENV <<EOT
+          CMAKE_C_FLAGS=-march=x86-64-v3
+          CMAKE_CXX_FLAGS=-march=x86-64-v3
+        EOT
+
+    - name: Export CMAKE_* vars to ENV configure both SDL and LLSS builds
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        cat >> $GITHUB_ENV <<EOT
+          CMAKE_SYSTEM_NAME=Windows
+          CMAKE_SYSTEM_VERSION="10.0"
+          CMAKE_C_FLAGS=/arch:AVX2
+          CMAKE_CXX_FLAGS=/arch:AVX2
+        EOT
+
+    - name: Export CMAKE_* vars to ENV configure both SDL and LLSS builds
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        cat >> $GITHUB_ENV <<EOT
+          CMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        EOT
+
     - name: Setup SDL
       if: runner.os == 'Linux'
       run: |
-        sudo apt update
-        sudo apt install libsdl3-dev libsdl3-image-dev libsdl3-ttf-dev
+        curl -Lfo SystemLibs.zip https://ludolpif.fr/pub/llss/artifacts/build-dep-0.6.2.0-ubuntu-noble-SystemLibs.zip
+        unzip -qo SystemLibs.zip
+        rm -f SystemLibs.zip
+        sudo dpkg -i lib/platform/sdl3-deb/libsdl3-*.deb || true
+        sudo apt-get update
+        sudo apt-get install -f
 
     - name: Setup SDL
       if: runner.os != 'Linux'
@@ -59,7 +90,6 @@ jobs:
       with:
         build-type: ${{ matrix.cfg }}
         cmake-arguments: >-
-          -DCMAKE_C_FLAGS=${{ matrix.arch_flags }}
           -DSDL_SHARED=ON
           -DSDL_STATIC=OFF
         cmake-generator: ${{ matrix.cmake_generator }}
@@ -76,31 +106,7 @@ jobs:
       run: env
 
     - name: Configure CMake
-      if: runner.os == 'Linux'
-      run: >-
-        cmake -S . -B ./build -G ${{ matrix.cmake_generator }}
-        -DCMAKE_C_FLAGS=${{ matrix.arch_flags }}
-        -DCMAKE_CXX_FLAGS=${{ matrix.arch_flags }}
-
-    - name: Configure CMake
-      if: runner.os == 'Windows'
-      run: >-
-        cmake -S . -B ./build -G ${{ matrix.cmake_generator }}
-        -DCMAKE_SYSTEM_NAME=Windows
-        -DCMAKE_SYSTEM_VERSION="10.0"
-        -DCMAKE_C_FLAGS=${{ matrix.arch_flags }}
-        -DCMAKE_CXX_FLAGS=${{ matrix.arch_flags }}
-        -DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}
-
-    - name: Configure CMake
-      if: runner.os == 'macOS'
-      run: >-
-        cmake -S . -B ./build -G ${{ matrix.cmake_generator }}
-        -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
-        -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" 
-        -DCMAKE_C_FLAGS=${{ matrix.arch_flags }}
-        -DCMAKE_CXX_FLAGS=${{ matrix.arch_flags }}
-        -DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}
+      run: cmake -S . -B ./build -G "${{ matrix.cmake_generator }}"
 
     - name: Build
       run: cmake --build ./build --config ${{ matrix.cfg }}

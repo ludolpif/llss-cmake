@@ -1,0 +1,159 @@
+name: Build for Desktop
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-win:
+    name: Build for Windows
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025-vs2026]
+        arch: [x64, ARM64]
+        cfg: [RelWithDebInfo]
+        target-winver: ["10.0"]
+        include:
+          - winver: "10.0"
+            platform: windows10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Configure
+        run: >-
+          cmake -B ./build -S . -G "Visual Studio 18 2026"
+          -A ${{ matrix.arch }}
+          -DCMAKE_SYSTEM_NAME=Windows
+          -DCMAKE_SYSTEM_VERSION=${{ matrix.target-winver }}
+          -DCMAKE_C_FLAGS=/arch:AVX2
+          -DCMAKE_CXX_FLAGS=/arch:AVX2
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.cfg }}
+
+      - name: Test
+        working-directory: ${{ github.workspace }}/build
+        run: ctest --build-config ${{ matrix.cfg }}
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v7
+          name: llss-0.X.Y.Z-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.cfg }}
+          path: |
+            build/${{ matrix.cfg }}/
+          retention-days: 5
+         #path: |
+         #  build/${{ matrix.cfg }}/*.exe
+         #  build/${{ matrix.cfg }}/*.dll
+         #  build/${{ matrix.cfg }}/*.ttf
+         #  build/${{ matrix.cfg }}/*.ogg
+         #  build/${{ matrix.cfg }}/*.svg
+          
+  build-linux:
+    name: Build for Linux
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04]
+        cfg: [RelWithDebInfo]
+        include:
+          - os: ubuntu-24.04
+            platform: linux-x86-64-v3-glibc6-2-39-libstdcxx-13-2
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y --no-install-recommends build-essential git cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libjack-dev libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev libxtst-dev
+
+      - name: Configure
+        run: >-
+          cmake -B ./build -S . -G "Ninja Multi-Config"
+          -DCMAKE_C_FLAGS=-march=x86-64-v3
+          -DCMAKE_CXX_FLAGS=-march=x86-64-v3
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.cfg }}
+
+      - name: Test
+        working-directory: ${{ github.workspace }}/build
+        run: ctest --build-config ${{ matrix.cfg }}
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v7
+          name: llss-0.X.Y.Z-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.cfg }}
+          path: |
+            build/${{ matrix.cfg }}/
+          retention-days: 5
+       #path: |
+       #  build/Release/llss
+       #  build/Release/*.so
+       #  build/Release/*.ttf
+       #  build/Release/*.ogg
+       #  build/Release/*.svg
+
+  build-mac:
+    name: Build for Apple
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14,macos-26-arm64]
+        cfg: [Release]
+        include:
+          - os: macos-14
+            platform: macos-14
+            xcode-version: '16.1'
+          - os: macos-26
+            platform: macos-26
+            xcode-version: '26.3'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Setup Xcode version
+        uses: maxim-lobanov/setup-xcode@v1.6.0
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+
+      - name: Configure
+        run: >-
+          cmake
+            -B ./build -S . -G "Xcode"
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+            -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
+            -DCMAKE_XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER=fr.ludolpif.llss
+            -DCMAKE_XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER=fr.ludolpif.llss
+
+      - name: Build
+        run: cmake --build build --config ${{ matrix.cfg }} --target install
+
+      - name: Test
+        working-directory: ${{ github.workspace }}/build
+        run: ctest --build-config ${{ matrix.cfg }}
+
+      - name: Ad-Hoc Codesign
+        run: codesign -s - -f ./build/release/llss.app --deep
+
+      - name: Create DMG
+        working-directory: ${{ github.workspace }}/build
+        run: | 
+          hdiutil create -size 2g -srcfolder release -volname llss llss.dmg
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with: 
+          name: llss-0.X.Y.Z-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.cfg }}
+          path: build/llss.dmg

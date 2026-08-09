@@ -51,6 +51,11 @@ jobs:
       with:
         persist-credentials: false
 
+    - name: Make some shell vars globally available
+      run: |
+        echo "ImageOS=${ImageOS}" >> $GITHUB_ENV
+        echo "ImageVersion=${ImageVersion}" >> $GITHUB_ENV
+
     - name: Setup SDL (${{ env.ImageOS }}-${{ env.ImageVersion }}-${{ matrix.cfg }})
       id: sdl
       uses: libsdl-org/setup-sdl@main
@@ -65,17 +70,16 @@ jobs:
         #cmake-toolchain-file:
         install-linux-dependencies: true
         version: ${{ matrix.sdl }}
-        #version-sdl-image: 3-latest
-        #version-sdl-mixer: 3-latest
-        #version-sdl-net: 3-latest
-        #version-sdl-ttf: 3-latest
+        version-sdl-image: 3-latest
+        version-sdl-mixer: 3-latest
+        version-sdl-net: 3-latest
+        version-sdl-ttf: 3-latest
 
-    - name: Dump context informations
-      run: |
-        echo GITHUB_OUTPUT
-        cat "$GITHUB_OUTPUT"
-        echo env
-        env
+    - name: Dump env and steps
+      env:
+        STEPS_JSON: ${{ toJSON(steps) }}
+      shell: bash
+      run: env
 
     - name: Configure CMake
       #working-directory: ${{ github.workspace }}

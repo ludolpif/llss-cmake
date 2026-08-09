@@ -14,8 +14,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 #option(SKIP_RPATH_FOR_VENDORED_DYNAMIC_LIBS "Skip RPATH tweaking for vendored dynamic library" OFF)
 
 find_package(SDL3 REQUIRED)
-find_package(SDL3_image REQUIRED)
-find_package(SDL3_ttf REQUIRED)
+#find_package(SDL3_image REQUIRED)
+#find_package(SDL3_ttf REQUIRED)
 
 if(LINUX)
     find_package(Threads REQUIRED)
@@ -64,8 +64,8 @@ target_compile_definitions(llss PRIVATE app_EXPORTS)
 
 target_link_libraries(llss PRIVATE
     imgui
-    SDL3_image::SDL3_image
-    SDL3_ttf::SDL3_ttf
+    #SDL3_image::SDL3_image
+    #SDL3_ttf::SDL3_ttf
     SDL3::SDL3
 )
 

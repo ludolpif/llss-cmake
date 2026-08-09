@@ -99,11 +99,11 @@ jobs:
         version-sdl-image: ${{ matrix.sdl-image }}
         version-sdl-ttf: 3-latest
 
-    - name: Dump env and steps
-      env:
-        STEPS_JSON: ${{ toJSON(steps) }}
-      shell: bash
-      run: env
+#   - name: Dump env and steps (may leak secrets in logs)
+#     env:
+#       STEPS_JSON: ${{ toJSON(steps) }}
+#     shell: bash
+#     run: env
 
     - name: Configure CMake
       run: cmake -S . -B ./build -G "${{ matrix.cmake_generator }}"
@@ -120,12 +120,12 @@ jobs:
 
     - name: Ad-Hoc Codesign
       if: runner.os == 'macOS'
-      run: codesign -s - -f "./build/release/llss.app" --deep
+      run: codesign -s - -f "./build/${{ matrix.cfg }}/llss.app" --deep
 
     - name: Create DMG
       if: runner.os == 'macOS'
       working-directory: ${{ github.workspace }}/build
-      run: hdiutil create -size 2g -srcfolder release -volname llss llss.dmg
+      run: hdiutil create -size 2g -srcfolder ${{ matrix.cfg }} -volname llss llss.dmg
 
     - name: Upload artifact
       uses: actions/upload-artifact@v7

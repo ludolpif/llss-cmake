@@ -15,8 +15,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
 find_package(SDL3 REQUIRED)
 find_package(SDL3_image REQUIRED)
-find_package(SDL3_net REQUIRED)
-find_package(SDL3_mixer REQUIRED)
 find_package(SDL3_ttf REQUIRED)
 
 if(LINUX)
@@ -67,8 +65,6 @@ target_compile_definitions(llss PRIVATE app_EXPORTS)
 target_link_libraries(llss PRIVATE
     imgui
     SDL3_image::SDL3_image
-    SDL3_net::SDL3_net
-    SDL3_mixer::SDL3_mixer
     SDL3_ttf::SDL3_ttf
     SDL3::SDL3
 )

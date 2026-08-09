@@ -22,7 +22,7 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the cfg list.
       matrix:
-        os: [ubuntu-24.04, windows-2025-vs2026, macos-15-intel, macos-26]
+        os: [ubuntu-24.04, windows-2025-vs2026, macos-26]
         cfg: [RelWithDebInfo]
         include:
           - os: windows-2025-vs2026
@@ -30,33 +30,38 @@ jobs:
             cmake_generator: Visual Studio 18 2026
             arch_flags: /arch:AVX2
             sdl: 3.4.14
+            sdl-image: 3.4.4
           - os: ubuntu-24.04
             platform: linux-x86-64-v3-glibc6-2-39-libstdcxx-13-2
             cmake_generator: Ninja Multi-Config
             arch_flags: -march=x86-64-v3
             sdl: 3.2.10
-          - os: macos-15-intel
-            platform: macos-15-intel
-            cmake_generator: Xcode
-            arch_flags:
-            sdl: 3.2.10
+            sdl-image: 3.2.4
           - os: macos-26
-            platform: macos-26-arm64
+            platform: macos-26
             cmake_generator: Xcode
             arch_flags:
             sdl: 3.4.14
+            sdl-image: 3.4.4
 
     steps:
     - uses: actions/checkout@v7
       with:
         persist-credentials: false
 
-    - name: Make some shell vars globally available
+    - name: Make some shell-only vars globally available
+      shell: bash
       run: |
-        echo "ImageOS=${ImageOS}" >> $GITHUB_ENV
-        echo "ImageVersion=${ImageVersion}" >> $GITHUB_ENV
+        echo "ImageOS=$ImageOS" >> $GITHUB_ENV
+        echo "ImageVersion=$ImageVersion" >> $GITHUB_ENV
 
-    - name: Setup SDL (${{ env.ImageOS }}-${{ env.ImageVersion }}-${{ matrix.cfg }})
+    - name: Prepare some reusable strings
+      shell: bash
+      run: |
+        echo "CACHE_DISCRIMINATOR=$ImageOS-$ImageVersion-${{ matrix.cfg }}" >> $GITHUB_ENV
+
+    - name: Setup SDL
+      if: runner.os != 'Linux'
       id: sdl
       uses: libsdl-org/setup-sdl@main
       with:
@@ -66,14 +71,20 @@ jobs:
           -DSDL_SHARED=ON
           -DSDL_STATIC=OFF
         cmake-generator: ${{ matrix.cmake_generator }}
-        discriminator: ${{ env.ImageOS }}-${{ env.ImageVersion }}-${{ matrix.cfg }}
-        #cmake-toolchain-file:
+        discriminator: ${{ env.CACHE_DISCRIMINATOR }}
         install-linux-dependencies: true
         version: ${{ matrix.sdl }}
-        version-sdl-image: 3-latest
-        version-sdl-mixer: 3-latest
-        version-sdl-net: 3-latest
+        version-sdl-image: ${{ matrix.sdl-image }}
         version-sdl-ttf: 3-latest
+
+    - name: Setup SDL
+      if: runner.os == 'Linux'
+      id: sdl
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install libsdl3-dev libsdl3-image-dev libsdl3-ttf-dev
+        echo "prefix=" >> $GITHUB_OUTPUT
 
     - name: Dump env and steps
       env:
@@ -84,14 +95,12 @@ jobs:
     - name: Configure CMake
       #working-directory: ${{ github.workspace }}
       run: >-
-        cmake -B ./build
+        cmake -S . -B ./build -G ${{ matrix.cmake_generator }}
         -DCMAKE_C_FLAGS=${{ matrix.arch_flags }}
         -DCMAKE_CXX_FLAGS=${{ matrix.arch_flags }}
         -DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}
-        -S .
 
     - name: Build
-      #working-directory: ${{ github.workspace }}
       run: cmake --build ./build --config ${{ matrix.cfg }}
 
     - name: Test
@@ -99,13 +108,13 @@ jobs:
       run: ctest --build-config ${{ matrix.cfg }}
 
     - name: Install
-      #working-directory: ${{ github.workspace }}
-      run: cmake --install ./build --config ${{ matrix.cfg }} --prefix ${{ github.workspace }}/install/${{ matrix.cfg }}
+      run: cmake --install ./build --config ${{ matrix.cfg }} --prefix ./install/${{ matrix.cfg }}
 
     - name: Upload artifact
-      #working-directory: ${{ github.workspace }}
       uses: actions/upload-artifact@v7
       with:
         name: llss-0.X.Y.Z-${{ matrix.platform }}-sdl${{ matrix.sdl }}-${{ matrix.cfg }}
-        path: ./install/${{ matrix.cfg }}
+        path: |
+          ./build/${{ matrix.cfg }}
+          ./install/${{ matrix.cfg }}
         retention-days: 5

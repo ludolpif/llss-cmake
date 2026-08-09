@@ -1,3 +1,6 @@
 /build
 /install
 /Visual Studio *
+/vendored/*/CMakeFiles/
+/vendored/*/Makefile
+/vendored/*/cmake_install.cmake
